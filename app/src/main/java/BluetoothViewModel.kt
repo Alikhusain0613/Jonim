@@ -5,11 +5,14 @@ import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.util.*
+
+data class Message(val text: String, val fromSelf: Boolean)
 
 class BluetoothViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -18,42 +21,39 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         manager?.adapter
     }
 
+    private var gatt: BluetoothGatt? = null
+    private var messageChar: BluetoothGattCharacteristic? = null
+
     private val _devices = MutableLiveData<List<DeviceModel>>(emptyList())
     val devices: LiveData<List<DeviceModel>> = _devices
-
     private val found = mutableMapOf<String, DeviceModel>()
+
+    private val _messages = MutableLiveData<List<Message>>(emptyList())
+    val messages: LiveData<List<Message>> = _messages
+
     private var scanning = false
-    private var bluetoothGatt: BluetoothGatt? = null
 
-    // GATT UUID’lar
-    private val GENERIC_ACCESS_SERVICE = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb")
-    private val DEVICE_NAME_CHARACTERISTIC = UUID.fromString("00002a00-0000-1000-8000-00805f9b34fb")
+    // Chat UUIDs (server bilan mos bo‘lsin!)
+    private val SERVICE_UUID = UUID.fromString("0000abcd-0000-1000-8000-00805f9b34fb")
+    private val MESSAGE_CHAR_UUID = UUID.fromString("0000dcba-0000-1000-8000-00805f9b34fb")
+    private val CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
-    private val scanCallback = object : ScanCallback() {
-        @SuppressLint("MissingPermission")
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            super.onScanResult(callbackType, result)
-            val device = result.device
-            val name = device.name ?: result.scanRecord?.deviceName ?: "Unknown"
-            val address = device.address
-            val rssi = result.rssi
-
-            found[address] = DeviceModel(name, address, rssi, device)
-            _devices.postValue(found.values.toList())
-
-            // Agar nom null bo‘lsa → GATT orqali olish
-            if (name == "Unknown") {
-                connectForName(device)
-            }
-        }
+    private fun addMsg(m: Message) {
+        val list = _messages.value?.toMutableList() ?: mutableListOf()
+        list.add(m)
+        _messages.postValue(list)
     }
 
+    // ---------- SCAN ----------
     @SuppressLint("MissingPermission")
     fun startScan() {
         if (scanning) return
-        val scanner = bluetoothAdapter?.bluetoothLeScanner ?: return
         found.clear()
         _devices.postValue(emptyList())
+
+        val scanner = bluetoothAdapter?.bluetoothLeScanner ?: return
+        // ixtiyoriy: faqat bizning service UUID bilan advertising qilayotganlarni ko‘rsatmoqchi bo‘lsang, filter qo‘shish mumkin
+        // lekin umumiy skan ham ishlaydi
         scanner.startScan(scanCallback)
         scanning = true
     }
@@ -65,61 +65,79 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         scanning = false
     }
 
-    fun isBluetoothEnabled(): Boolean {
-        return bluetoothAdapter?.isEnabled == true
+    private val scanCallback = object : ScanCallback() {
+        @SuppressLint("MissingPermission")
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            val device = result.device
+            val name = device.name ?: result.scanRecord?.deviceName ?: "Unknown"
+            val address = device.address
+            val rssi = result.rssi
+            found[address] = DeviceModel(name, address, rssi, device)
+            _devices.postValue(found.values.toList())
+        }
     }
 
-    // GATT orqali Device Name olish
+    fun isBluetoothEnabled(): Boolean = bluetoothAdapter?.isEnabled == true
+
+    // ---------- CONNECT ----------
     @SuppressLint("MissingPermission")
-    private fun connectForName(device: BluetoothDevice) {
-        bluetoothGatt = device.connectGatt(getApplication(), false, object : BluetoothGattCallback() {
+    fun connectToDevice(device: BluetoothDevice) {
+        gatt?.close()
+        _messages.postValue(emptyList())
+        addMsg(Message("Connecting to ${device.address} ...", false))
+        gatt = device.connectGatt(getApplication(), false, gattCallback)
+    }
 
-            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Log.d("GATT", "Connected to ${device.address}, discovering services...")
-                    gatt.discoverServices()
-                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.d("GATT", "Disconnected from ${device.address}")
-                    gatt.close()
-                }
+    private val gattCallback = object : BluetoothGattCallback() {
+        @SuppressLint("MissingPermission")
+        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                Log.d("CLIENT", "Connected, discovering services")
+                gatt.discoverServices()
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                Log.d("CLIENT", "Disconnected")
+                addMsg(Message("Disconnected", false))
+                gatt.close()
             }
+        }
 
-            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
-                if (status == BluetoothGatt.GATT_SUCCESS) {
-                    val service = gatt.getService(GENERIC_ACCESS_SERVICE)
-                    val characteristic = service?.getCharacteristic(DEVICE_NAME_CHARACTERISTIC)
-
-                    if (characteristic != null) {
-                        gatt.readCharacteristic(characteristic)
-                    } else {
-                        Log.e("GATT", "Device Name characteristic not found!")
-                        gatt.disconnect()
-                        gatt.close()
-                    }
-                }
+        @SuppressLint("MissingPermission")
+        override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+            if (status != BluetoothGatt.GATT_SUCCESS) return
+            val svc = gatt.getService(SERVICE_UUID)
+            messageChar = svc?.getCharacteristic(MESSAGE_CHAR_UUID)
+            if (messageChar == null) {
+                addMsg(Message("Chat characteristic not found", false))
+                return
             }
-
-            override fun onCharacteristicRead(
-                gatt: BluetoothGatt,
-                characteristic: BluetoothGattCharacteristic,
-                status: Int
-            ) {
-                if (status == BluetoothGatt.GATT_SUCCESS &&
-                    characteristic.uuid == DEVICE_NAME_CHARACTERISTIC
-                ) {
-                    val name = characteristic.value?.decodeToString() ?: "Unknown"
-                    val address = gatt.device.address
-                    val rssi = 0
-
-                    Log.d("GATT", "Device name from GATT: $name")
-
-                    found[address] = DeviceModel(name, address, rssi, gatt.device)
-                    _devices.postValue(found.values.toList())
-
-                    gatt.disconnect()
-                    gatt.close()
-                }
+            // NOTIFY yoqish: CCCD descriptorga yozish SHART!
+            val cccd = messageChar!!.getDescriptor(CCCD_UUID)
+            if (cccd != null) {
+                gatt.setCharacteristicNotification(messageChar, true)
+                cccd.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                gatt.writeDescriptor(cccd) // -> server endi notify yubora oladi
             }
-        })
+            addMsg(Message("Ready. You can send messages.", false))
+        }
+
+        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            if (characteristic.uuid == MESSAGE_CHAR_UUID) {
+                val txt = characteristic.value?.decodeToString() ?: ""
+                addMsg(Message(txt, false))
+            }
+        }
+    }
+
+    // ---------- SEND ----------
+    @SuppressLint("MissingPermission")
+    fun sendMessage(text: String) {
+        val ch = messageChar ?: run {
+            addMsg(Message("Not connected to chat characteristic", false))
+            return
+        }
+        ch.value = text.toByteArray()
+        val ok = gatt?.writeCharacteristic(ch) ?: false
+        if (ok) addMsg(Message(text, true))
+        else addMsg(Message("Send failed", false))
     }
 }

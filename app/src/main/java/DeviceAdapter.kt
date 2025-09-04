@@ -8,31 +8,46 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
-class DeviceAdapter : ListAdapter<DeviceModel, DeviceAdapter.ViewHolder>(DiffCallback()) {
+class DeviceAdapter(
+    private val onClick: (DeviceModel) -> Unit
+) : ListAdapter<DeviceModel, DeviceAdapter.DeviceViewHolder>(DiffCallback()) {
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val name: TextView = itemView.findViewById(R.id.deviceName)
-        val address: TextView = itemView.findViewById(R.id.deviceAddress)
-        val rssi: TextView = itemView.findViewById(R.id.deviceRssi)
+    class DeviceViewHolder(itemView: View, val onClick: (DeviceModel) -> Unit) :
+        RecyclerView.ViewHolder(itemView) {
+        private val name: TextView = itemView.findViewById(R.id.deviceName)
+        private val address: TextView = itemView.findViewById(R.id.deviceAddress)
+        private var currentDevice: DeviceModel? = null
+
+        init {
+            itemView.setOnClickListener {
+                currentDevice?.let { onClick(it) }
+            }
+        }
+
+        fun bind(device: DeviceModel) {
+            currentDevice = device
+            name.text = device.name
+            address.text = "${device.address} (RSSI: ${device.rssi})"
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeviceViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_device, parent, false)
+        return DeviceViewHolder(view, onClick)
+    }
+
+    override fun onBindViewHolder(holder: DeviceViewHolder, position: Int) {
+        holder.bind(getItem(position))
     }
 
     class DiffCallback : DiffUtil.ItemCallback<DeviceModel>() {
-        override fun areItemsTheSame(oldItem: DeviceModel, newItem: DeviceModel): Boolean =
-            oldItem.address == newItem.address
+        override fun areItemsTheSame(oldItem: DeviceModel, newItem: DeviceModel): Boolean {
+            return oldItem.address == newItem.address
+        }
 
-        override fun areContentsTheSame(oldItem: DeviceModel, newItem: DeviceModel): Boolean =
-            oldItem == newItem
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_device, parent, false)
-        return ViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val device = getItem(position)
-        holder.name.text = device.name
-        holder.address.text = device.address
-        holder.rssi.text = "RSSI: ${device.rssi}"
+        override fun areContentsTheSame(oldItem: DeviceModel, newItem: DeviceModel): Boolean {
+            return oldItem == newItem
+        }
     }
 }
