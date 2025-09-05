@@ -14,6 +14,7 @@ import java.util.*
 
 data class Message(val text: String, val fromSelf: Boolean)
 
+@SuppressLint("NewApi")
 class BluetoothViewModel(application: Application) : AndroidViewModel(application) {
 
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
@@ -69,7 +70,8 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             val device = result.device
-            val name = device.name ?: result.scanRecord?.deviceName ?: "Unknown"
+            val name = device.name ?: result.scanRecord?.deviceName
+            if (name.isNullOrBlank()) return
             val address = device.address
             val rssi = result.rssi
             found[address] = DeviceModel(name, address, rssi, device)

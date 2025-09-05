@@ -93,12 +93,26 @@ class MainActivity : AppCompatActivity() {
         // Observers
         clientVM.devices.observe(this) { list -> adapter.submitList(list) }
         clientVM.messages.observe(this) { msgs ->
-            tvClientChat.text = msgs.joinToString("\n") { if (it.fromSelf) "You: ${it.text}" else it.text }
+            tvClientChat.text = msgs.joinToString("\n") { msg ->
+                if (msg.fromSelf) {
+                    "You: ${msg.text}"
+                } else {
+                    "Server: ${msg.text}"
+                }
+            }
         }
 
+
         serverVM.messages.observe(this) { msgs ->
-            tvServerChat.text = msgs.joinToString("\n") { if (it.fromSelf) "You: ${it.text}" else it.text }
+            tvServerChat.text = msgs.joinToString("\n") { msg ->
+                if (msg.fromSelf) {
+                    "You: ${msg.text}"   // serverning o‘zi yuborgan xabar
+                } else {
+                    "Client: ${msg.text}" // clientdan kelgan xabar
+                }
+            }
         }
+
         serverVM.isAdvertising.observe(this) { adv ->
             tvAdvState.text = if (adv) "Advertising: ON" else "Advertising: OFF"
         }

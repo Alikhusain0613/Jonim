@@ -14,6 +14,7 @@ import androidx.lifecycle.MutableLiveData
 import java.util.*
 import java.util.concurrent.CopyOnWriteArraySet
 
+@SuppressLint("NewApi")
 class ServerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val btManager: BluetoothManager by lazy {
@@ -135,6 +136,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
 
+        @SuppressLint("MissingPermission")
         override fun onDescriptorWriteRequest(
             device: BluetoothDevice,
             requestId: Int,
@@ -160,6 +162,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
 
+        @SuppressLint("MissingPermission")
         override fun onCharacteristicWriteRequest(
             device: BluetoothDevice,
             requestId: Int,
@@ -171,12 +174,11 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
         ) {
             if (characteristic.uuid == MESSAGE_CHAR_UUID) {
                 val txt = value.decodeToString()
-                addMsg(Message("Client: $txt", false))
+                addMsg(Message(" $txt",false))
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 }
                 // istasang echo qaytarish (notify) ham mumkin:
-                sendToSubscribers("Echo: $txt")
             } else {
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null)
@@ -195,6 +197,6 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
         for (d in subscribers) {
             gattServer?.notifyCharacteristicChanged(d, ch, false)
         }
-        addMsg(Message("You: $text", true))
+        addMsg(Message(" $text", true))
     }
 }
