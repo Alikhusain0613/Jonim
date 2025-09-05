@@ -11,26 +11,19 @@
         android:id="@+id/deviceName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Device Name"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="@color/primary_blue"/>
+        android:text="@string/deviceName"/>
 
     <TextView
         android:id="@+id/deviceAddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00:11:22:33:44:55"
-        android:textSize="14sp"
-        android:textColor="@color/black"
+        android:text="@string/deviceAddress"
         android:layout_marginTop="2dp"/>
 
     <TextView
         android:id="@+id/deviceRssi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="RSSI: -60"
-        android:textSize="12sp"
-        android:textColor="#FF666666"
+        android:text="@string/deviceRssi"
         android:layout_marginTop="2dp"/>
 </LinearLayout>

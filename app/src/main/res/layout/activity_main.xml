@@ -1,166 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp"
         android:background="@drawable/bg_chippy"
         android:focusableInTouchMode="true">
 
-        <!-- CLIENT (Scanner) -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="CLIENT (Scanner)"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="@color/primary_blue"
-            android:layout_marginBottom="8dp"/>
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/teal_primary"
+        android:elevation="4dp" />
 
-        <Button
-            android:id="@+id/btnScan"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Scan"
-            android:backgroundTint="@color/primary_blue"
-            android:textColor="@color/white"
-            android:layout_marginBottom="8dp"/>
+            android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp"
-            android:background="@color/white"
-            android:overScrollMode="never"
-            android:layout_marginBottom="8dp"/>
+            <LinearLayout
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp">
+                <!-- CLIENT (Scanner) -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/text_client"
+                    android:textAlignment="center"
+                    android:textColor="@color/teal_primary_dark"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
-            <EditText
-                android:id="@+id/etClientMsg"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Type message (client)"
-                android:background="@drawable/edit_text_bg"
-                android:padding="12dp"
-                android:layout_marginEnd="8dp"/>
+                <Button
+                    android:id="@+id/btnScan"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_scan_devices"
+                    android:layout_marginBottom="8dp"/>
 
-            <Button
-                android:id="@+id/btnSendClient"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Send"
-                android:backgroundTint="@color/primary_blue"
-                android:textColor="@color/white"/>
-        </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="8dp"
+                    android:overScrollMode="never"
+                    android:layout_marginBottom="8dp"/>
 
-        <TextView
-            android:id="@+id/tvClientChat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textIsSelectable="true"
-            android:layout_marginTop="8dp"
-            android:minHeight="60dp"
-            android:background="@color/white"
-            android:padding="8dp"
-            android:textColor="@color/black"/>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginVertical="16dp"
-            android:background="@color/primary_blue"
-            android:alpha="0.3"/>
+                    <EditText
+                        android:id="@+id/etClientMsg"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/edit_text_bg"
+                        android:hint="@string/type_message"
+                        android:padding="12dp"
+                        android:textSize="14sp" />
 
-        <!-- SERVER (Peripheral) -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SERVER (Peripheral)"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="@color/primary_blue"
-            android:layout_marginBottom="8dp"/>
+                    <Button
+                        android:id="@+id/btnSendClient"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/send"/>
+                </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvAdvState"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Advertising: OFF"
-            android:layout_marginBottom="8dp"
-            android:textColor="@color/black"/>
+                <TextView
+                    android:id="@+id/tvClientChat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="60dp"
+                    android:padding="8dp"/>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="16dp"
+                    android:alpha="0.3"/>
 
-            <Button
-                android:id="@+id/btnStartServer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Start Server"
-                android:layout_weight="1"
-                android:backgroundTint="@color/primary_blue"
-                android:textColor="@color/white"/>
+                <!-- SERVER (Peripheral) -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/text_server"
+                    android:textAlignment="center"
+                    android:textColor="@color/teal_primary_dark"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"/>
 
-            <Button
-                android:id="@+id/btnStopServer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Stop Server"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:backgroundTint="@color/primary_blue"
-                android:textColor="@color/white"/>
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tvAdvState"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/status"
+                    android:layout_marginBottom="8dp"/>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp">
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp">
 
-            <EditText
-                android:id="@+id/etServerMsg"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Type message (server)"
-                android:background="@drawable/edit_text_bg"
-                android:padding="12dp"
-                android:layout_marginEnd="8dp"/>
+                    <Button
+                        android:id="@+id/btnStartServer"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/start_server"
+                        android:layout_weight="1"/>
 
-            <Button
-                android:id="@+id/btnSendServer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Send"
-                android:backgroundTint="@color/primary_blue"
-                android:textColor="@color/white"/>
-        </LinearLayout>
+                    <Button
+                        android:id="@+id/btnStopServer"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/stop_server"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"/>
+                </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvServerChat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textIsSelectable="true"
-            android:layout_marginTop="8dp"
-            android:minHeight="60dp"
-            android:background="@color/white"
-            android:padding="8dp"
-            android:textColor="@color/black"/>
-    </LinearLayout>
-</ScrollView>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <EditText
+                        android:id="@+id/etServerMsg"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/edit_text_bg"
+                        android:hint="@string/type_message"
+                        android:padding="12dp"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/btnSendServer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/send"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvServerChat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="60dp"
+                    android:padding="8dp"/>
+
+            </LinearLayout>
+        </ScrollView>
+
+</LinearLayout>

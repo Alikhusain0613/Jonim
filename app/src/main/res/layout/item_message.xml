@@ -2,24 +2,18 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/primary_cream">
+    android:orientation="vertical">
 
     <Button
         android:id="@+id/scanButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Scan"
-        android:backgroundTint="@color/primary_blue"
-        android:textColor="@color/white"
-        android:layout_marginBottom="16dp"/>
+        android:text="@string/text_scan_devices"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingTop="8dp"
-        android:background="@color/white"/>
+        android:paddingTop="8dp"/>
 </LinearLayout>
