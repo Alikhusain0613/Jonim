@@ -1,0 +1,16 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimaryDark">@color/primary_blue</item> <!-- Darker variant of blue for status bar. You can create one later if needed -->
+        <item name="colorAccent">@color/primary_blue</item> <!-- For controls, checkboxes, etc. -->
+
+        <!-- Optional: Set window background to the cream color -->
+        <item name="android:windowBackground">@color/primary_cream</item>
+        <!-- Optional: Set default text color on that background for better contrast -->
+        <item name="android:textColorPrimary">@color/black</item>
+    </style>
+
+</resources>

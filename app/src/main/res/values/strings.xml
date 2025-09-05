@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Jonim</string>
+    <string name="app_name">CHIPpy:Jonim</string>
+    <string name="scan_devices">デバイスをスキャン</string>
 </resources>

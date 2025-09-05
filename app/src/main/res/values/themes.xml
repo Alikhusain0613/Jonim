@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.Jonim" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Material Theme using the new colors -->
+    <style name="Theme.Jonim" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimaryVariant">@color/primary_blue</item>
+        <item name="colorOnPrimary">@color/white</item> <!-- Text/Icons on blue background -->
+        <item name="android:windowBackground">@color/primary_cream</item>
+        <item name="colorOnBackground">@color/black</item> <!-- Text on cream background -->
+        <item name="colorSecondary">@color/primary_blue</item> <!-- Often used for accents -->
+        <item name="colorSecondaryVariant">@color/primary_blue</item>
+        <item name="colorOnSecondary">@color/white</item> <!-- Text/Icons on secondary blue -->
+    </style>
 </resources>

@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:background="@drawable/bg_chippy"
+        android:focusableInTouchMode="true">
 
         <!-- CLIENT (Scanner) -->
         <TextView
@@ -15,20 +18,27 @@
             android:layout_height="wrap_content"
             android:text="CLIENT (Scanner)"
             android:textStyle="bold"
-            android:textSize="18sp"/>
+            android:textSize="18sp"
+            android:textColor="@color/primary_blue"
+            android:layout_marginBottom="8dp"/>
 
         <Button
             android:id="@+id/btnScan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Scan"/>
+            android:text="Scan"
+            android:backgroundTint="@color/primary_blue"
+            android:textColor="@color/white"
+            android:layout_marginBottom="8dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_marginTop="8dp"
-            android:overScrollMode="never"/>
+            android:background="@color/white"
+            android:overScrollMode="never"
+            android:layout_marginBottom="8dp"/>
 
         <LinearLayout
             android:orientation="horizontal"
@@ -41,13 +51,18 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Type message (client)"/>
+                android:hint="Type message (client)"
+                android:background="@drawable/edit_text_bg"
+                android:padding="12dp"
+                android:layout_marginEnd="8dp"/>
 
             <Button
                 android:id="@+id/btnSendClient"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Send"/>
+                android:text="Send"
+                android:backgroundTint="@color/primary_blue"
+                android:textColor="@color/white"/>
         </LinearLayout>
 
         <TextView
@@ -55,14 +70,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textIsSelectable="true"
-            android:layout_marginTop="4dp"
-            android:minHeight="60dp" />
+            android:layout_marginTop="8dp"
+            android:minHeight="60dp"
+            android:background="@color/white"
+            android:padding="8dp"
+            android:textColor="@color/black"/>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginVertical="12dp"
-            android:background="#CCCCCC"/>
+            android:layout_marginVertical="16dp"
+            android:background="@color/primary_blue"
+            android:alpha="0.3"/>
 
         <!-- SERVER (Peripheral) -->
         <TextView
@@ -70,26 +89,32 @@
             android:layout_height="wrap_content"
             android:text="SERVER (Peripheral)"
             android:textStyle="bold"
-            android:textSize="18sp"/>
+            android:textSize="18sp"
+            android:textColor="@color/primary_blue"
+            android:layout_marginBottom="8dp"/>
 
         <TextView
             android:id="@+id/tvAdvState"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Advertising: OFF"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/black"/>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
 
             <Button
                 android:id="@+id/btnStartServer"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Start Server"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:backgroundTint="@color/primary_blue"
+                android:textColor="@color/white"/>
 
             <Button
                 android:id="@+id/btnStopServer"
@@ -97,7 +122,9 @@
                 android:layout_height="wrap_content"
                 android:text="Stop Server"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/primary_blue"
+                android:textColor="@color/white"/>
         </LinearLayout>
 
         <LinearLayout
@@ -111,13 +138,18 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Type message (server)"/>
+                android:hint="Type message (server)"
+                android:background="@drawable/edit_text_bg"
+                android:padding="12dp"
+                android:layout_marginEnd="8dp"/>
 
             <Button
                 android:id="@+id/btnSendServer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Send"/>
+                android:text="Send"
+                android:backgroundTint="@color/primary_blue"
+                android:textColor="@color/white"/>
         </LinearLayout>
 
         <TextView
@@ -125,7 +157,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textIsSelectable="true"
-            android:layout_marginTop="4dp"
-            android:minHeight="60dp"/>
+            android:layout_marginTop="8dp"
+            android:minHeight="60dp"
+            android:background="@color/white"
+            android:padding="8dp"
+            android:textColor="@color/black"/>
     </LinearLayout>
 </ScrollView>

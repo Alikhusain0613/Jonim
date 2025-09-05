@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.material:material:1.12.0") // Or the latest version
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
