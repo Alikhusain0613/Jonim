@@ -105,9 +105,9 @@ class MainActivity : AppCompatActivity() {
         clientVM.messages.observe(this) { msgs ->
             tvClientChat.text = msgs.joinToString("\n") { msg ->
                 if (msg.fromSelf) {
-                    "You: ${msg.text}"
+                    "あなた：${msg.text}"
                 } else {
-                    "Server: ${msg.text}"
+                    "サーバー：${msg.text}"
                 }
             }
         }
@@ -116,15 +116,15 @@ class MainActivity : AppCompatActivity() {
         serverVM.messages.observe(this) { msgs ->
             tvServerChat.text = msgs.joinToString("\n") { msg ->
                 if (msg.fromSelf) {
-                    "You: ${msg.text}"   // serverning o‘zi yuborgan xabar
+                    "あなた：${msg.text}"   // message sent by the server itself
                 } else {
-                    "Client: ${msg.text}" // clientdan kelgan xabar
+                    "クライアント：${msg.text}" // message from client
                 }
             }
         }
 
         serverVM.isAdvertising.observe(this) { adv ->
-            tvAdvState.text = if (adv) "Advertising: ON" else "Advertising: OFF"
+            tvAdvState.text = if (adv) "アドバタイズ：ON" else "アドバタイズ：OFF"
         }
     }
 

@@ -53,8 +53,8 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         _devices.postValue(emptyList())
 
         val scanner = bluetoothAdapter?.bluetoothLeScanner ?: return
-        // ixtiyoriy: faqat bizning service UUID bilan advertising qilayotganlarni ko‘rsatmoqchi bo‘lsang, filter qo‘shish mumkin
-        // lekin umumiy skan ham ishlaydi
+        // optional: you can add a filter if you only want to show those advertising with our service UUID
+        // but a general scan will also work
         scanner.startScan(scanCallback)
         scanning = true
     }
