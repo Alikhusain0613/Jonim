@@ -87,8 +87,7 @@
                     android:textIsSelectable="true"
                     android:layout_marginTop="8dp"
                     android:minHeight="60dp"
-                    android:padding="8dp"
-                    android:background="@drawable/message_item_bg"/>
+                    android:padding="8dp"/>
 
                 <View
                     android:layout_width="match_parent"
@@ -171,8 +170,7 @@
                     android:textIsSelectable="true"
                     android:layout_marginTop="8dp"
                     android:minHeight="60dp"
-                    android:padding="8dp"
-                    android:background="@drawable/message_item_bg"/>
+                    android:padding="8dp"/>
 
             </LinearLayout>
         </ScrollView>

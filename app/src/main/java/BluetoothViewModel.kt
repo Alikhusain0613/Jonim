@@ -10,9 +10,8 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import java.util.*
-
-data class Message(val text: String, val fromSelf: Boolean)
 
 @SuppressLint("NewApi")
 class BluetoothViewModel(application: Application) : AndroidViewModel(application) {
@@ -133,13 +132,20 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     // ---------- SEND ----------
     @SuppressLint("MissingPermission")
     fun sendMessage(text: String) {
-        val ch = messageChar ?: run {
-            addMsg(Message("Not connected to chat characteristic", false))
-            return
+        val currentMessages = _messages.value ?: emptyList()
+        val newMessage = Message(text, fromSelf = true) // timestamp will be auto-added
+        _messages.value = currentMessages + newMessage
+
+        // Also send via Bluetooth if connected
+        messageChar?.let { char ->
+            char.value = text.toByteArray()
+            gatt?.writeCharacteristic(char)
         }
-        ch.value = text.toByteArray()
-        val ok = gatt?.writeCharacteristic(ch) ?: false
-        if (ok) addMsg(Message(text, true))
-        else addMsg(Message("Send failed", false))
+    }
+
+    fun onMessageReceived(text: String) {
+        val currentMessages = _messages.value ?: emptyList()
+        val newMessage = Message(text, fromSelf = false) // timestamp will be auto-added
+        _messages.value = currentMessages + newMessage
     }
 }

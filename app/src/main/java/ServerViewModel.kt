@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import java.util.*
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -25,6 +26,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private var gattServer: BluetoothGattServer? = null
+    private var messageChar: BluetoothGattCharacteristic? = null
     private val subscribers = CopyOnWriteArraySet<BluetoothDevice>() // NOTIFY uchun obunachilar
 
     private val _isAdvertising = MutableLiveData(false)
@@ -174,11 +176,10 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
         ) {
             if (characteristic.uuid == MESSAGE_CHAR_UUID) {
                 val txt = value.decodeToString()
-                addMsg(Message(" $txt",false))
+                addMsg(Message(txt, false)) // timestamp will be auto-added
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 }
-                // istasang echo qaytarish (notify) ham mumkin:
             } else {
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null)
@@ -190,13 +191,20 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
     // --------- Serverdan xabar yuborish (NOTIFY) ----------
     @SuppressLint("MissingPermission")
     fun sendToSubscribers(text: String) {
-        val service = gattServer?.getService(SERVICE_UUID) ?: return
-        val ch = service.getCharacteristic(MESSAGE_CHAR_UUID) ?: return
-        ch.value = text.toByteArray()
-        // barcha obunachilarga notify
-        for (d in subscribers) {
-            gattServer?.notifyCharacteristicChanged(d, ch, false)
+        val currentMessages = _messages.value ?: emptyList()
+        val newMessage = Message(text, fromSelf = true) // timestamp will be auto-added
+        _messages.value = currentMessages + newMessage
+
+        // Also send via Bluetooth to all subscribers
+        subscribers.forEach { device ->
+            messageChar?.value = text.toByteArray()
+            gattServer?.notifyCharacteristicChanged(device, messageChar, false)
         }
-        addMsg(Message(" $text", true))
+    }
+
+    fun onMessageReceived(text: String) {
+        val currentMessages = _messages.value ?: emptyList()
+        val newMessage = Message(text, fromSelf = false) // timestamp will be auto-added
+        _messages.value = currentMessages + newMessage
     }
 }

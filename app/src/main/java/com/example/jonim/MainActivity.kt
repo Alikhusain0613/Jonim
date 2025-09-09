@@ -1,6 +1,11 @@
 package com.example.jonim
 
 import android.Manifest
+import android.graphics.Color
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -102,30 +107,96 @@ class MainActivity : AppCompatActivity() {
 
         // Observers
         clientVM.devices.observe(this) { list -> adapter.submitList(list) }
+
         clientVM.messages.observe(this) { msgs ->
-            tvClientChat.text = msgs.joinToString("\n") { msg ->
-                if (msg.fromSelf) {
-                    "あなた：${msg.text}"
+            val spannable = SpannableStringBuilder()
+            msgs.forEach { message ->
+                val messageText = if (message.fromSelf) {
+                    "あなた：${message.text}"
                 } else {
-                    "サーバー：${msg.text}"
+                    "サーバー：${message.text}"
                 }
+
+                val timeText = "   ${formatTime(message.timestamp)}"
+
+                // Add message text
+                spannable.append(messageText)
+                spannable.append("\n")
+
+                // Add timestamp with different style
+                val start = spannable.length
+                spannable.append(timeText)
+                val end = spannable.length
+
+                // Style the timestamp (grey color, smaller size)
+                spannable.setSpan(
+                    ForegroundColorSpan(Color.GRAY),
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                spannable.setSpan(
+                    RelativeSizeSpan(0.8f),
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                spannable.append("\n\n")
             }
+            tvClientChat.text = spannable
         }
 
-
         serverVM.messages.observe(this) { msgs ->
-            tvServerChat.text = msgs.joinToString("\n") { msg ->
-                if (msg.fromSelf) {
-                    "あなた：${msg.text}"   // message sent by the server itself
+            val spannable = SpannableStringBuilder()
+            msgs.forEach { message ->
+                val messageText = if (message.fromSelf) {
+                    "あなた：${message.text}"
                 } else {
-                    "クライアント：${msg.text}" // message from client
+                    "クライアント：${message.text}"
                 }
+
+                val timeText = "   ${formatTime(message.timestamp)}"
+
+                // Add message text
+                spannable.append(messageText)
+                spannable.append("\n")
+
+                // Add timestamp with different style
+                val start = spannable.length
+                spannable.append(timeText)
+                val end = spannable.length
+
+                // Style the timestamp (grey color, smaller size)
+                spannable.setSpan(
+                    ForegroundColorSpan(Color.GRAY),
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                spannable.setSpan(
+                    RelativeSizeSpan(0.8f),
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                spannable.append("\n\n")
             }
+            tvServerChat.text = spannable
         }
 
         serverVM.isAdvertising.observe(this) { adv ->
             tvAdvState.text = if (adv) "アドバタイズ：ON" else "アドバタイズ：OFF"
         }
+    }
+
+    // Add this function to get current time
+    private fun getCurrentTime(): String {
+        return android.text.format.DateFormat.format("HH:mm:ss", java.util.Date()).toString()
+    }
+
+    // Keep your formatTime function
+    private fun formatTime(timestamp: Long): String {
+        return android.text.format.DateFormat.format("HH:mm:ss", timestamp).toString()
     }
 
     // ---- Permissions ----
