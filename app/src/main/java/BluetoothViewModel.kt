@@ -5,12 +5,10 @@ import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import java.util.*
 
 @SuppressLint("NewApi")
@@ -28,8 +26,8 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     val devices: LiveData<List<DeviceModel>> = _devices
     private val found = mutableMapOf<String, DeviceModel>()
 
-    private val _messages = MutableLiveData<List<Message>>(emptyList())
-    val messages: LiveData<List<Message>> = _messages
+    private val _messages = MutableLiveData<List<MessageModel>>(emptyList())
+    val messages: LiveData<List<MessageModel>> = _messages
 
     private var scanning = false
 
@@ -38,7 +36,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     private val MESSAGE_CHAR_UUID = UUID.fromString("0000dcba-0000-1000-8000-00805f9b34fb")
     private val CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
-    private fun addMsg(m: Message) {
+    private fun addMsg(m: MessageModel) {
         val list = _messages.value?.toMutableList() ?: mutableListOf()
         list.add(m)
         _messages.postValue(list)
@@ -85,7 +83,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     fun connectToDevice(device: BluetoothDevice) {
         gatt?.close()
         _messages.postValue(emptyList())
-        addMsg(Message("Connecting to ${device.address} ...", false))
+        addMsg(MessageModel("Connecting to ${device.address} ...", false))
         gatt = device.connectGatt(getApplication(), false, gattCallback)
     }
 
@@ -97,7 +95,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
                 gatt.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d("CLIENT", "Disconnected")
-                addMsg(Message("Disconnected", false))
+                addMsg(MessageModel("Disconnected", false))
                 gatt.close()
             }
         }
@@ -108,7 +106,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
             val svc = gatt.getService(SERVICE_UUID)
             messageChar = svc?.getCharacteristic(MESSAGE_CHAR_UUID)
             if (messageChar == null) {
-                addMsg(Message("Chat characteristic not found", false))
+                addMsg(MessageModel("Chat characteristic not found", false))
                 return
             }
             // NOTIFY yoqish: CCCD descriptorga yozish SHART!
@@ -118,13 +116,13 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
                 cccd.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                 gatt.writeDescriptor(cccd) // -> server endi notify yubora oladi
             }
-            addMsg(Message("Ready. You can send messages.", false))
+            addMsg(MessageModel("Ready. You can send messages.", false))
         }
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             if (characteristic.uuid == MESSAGE_CHAR_UUID) {
                 val txt = characteristic.value?.decodeToString() ?: ""
-                addMsg(Message(txt, false))
+                addMsg(MessageModel(txt, false))
             }
         }
     }
@@ -132,20 +130,13 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     // ---------- SEND ----------
     @SuppressLint("MissingPermission")
     fun sendMessage(text: String) {
-        val currentMessages = _messages.value ?: emptyList()
-        val newMessage = Message(text, fromSelf = true) // timestamp will be auto-added
-        _messages.value = currentMessages + newMessage
-
-        // Also send via Bluetooth if connected
-        messageChar?.let { char ->
-            char.value = text.toByteArray()
-            gatt?.writeCharacteristic(char)
+        val ch = messageChar ?: run {
+            addMsg(MessageModel("Not connected to chat characteristic", false))
+            return
         }
-    }
-
-    fun onMessageReceived(text: String) {
-        val currentMessages = _messages.value ?: emptyList()
-        val newMessage = Message(text, fromSelf = false) // timestamp will be auto-added
-        _messages.value = currentMessages + newMessage
+        ch.value = text.toByteArray()
+        val ok = gatt?.writeCharacteristic(ch) ?: false
+        if (ok) addMsg(MessageModel(text, true))
+        else addMsg(MessageModel("Send failed", false))
     }
 }
