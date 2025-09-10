@@ -86,7 +86,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     fun connectToDevice(device: BluetoothDevice) {
         gatt?.close()
         _messages.postValue(emptyList())
-        addMsg(Message("Connecting to ${device.address} ...", false))
+        addMsg(Message("Connecting to ${device.name} ...", false))
         gatt = device.connectGatt(getApplication(), false, gattCallback)
     }
 
@@ -109,7 +109,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
             val svc = gatt.getService(SERVICE_UUID)
             messageChar = svc?.getCharacteristic(MESSAGE_CHAR_UUID)
             if (messageChar == null) {
-                addMsg(Message("Chat characteristic not found", false))
+                addMsg(Message("not connected", false))
                 return
             }
             // NOTIFY yoqish: CCCD descriptorga yozish SHART!
@@ -134,7 +134,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     @SuppressLint("MissingPermission")
     fun sendMessage(text: String) {
         val ch = messageChar ?: run {
-            addMsg(Message("Not connected to chat characteristic", false))
+            addMsg(Message("Not connected", false))
             return
         }
         ch.value = text.toByteArray()
