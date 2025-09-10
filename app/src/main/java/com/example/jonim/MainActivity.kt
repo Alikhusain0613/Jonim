@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -103,31 +104,62 @@ class MainActivity : AppCompatActivity() {
         // Observers
         clientVM.devices.observe(this) { list -> adapter.submitList(list) }
         clientVM.messages.observe(this) { msgs ->
-            tvClientChat.text = msgs.joinToString("\n") { msg ->
-                if (msg.fromSelf) {
-                    "You: ${msg.text}"
+            val spannable = SpannableStringBuilder()
+            msgs.forEach { message ->
+                val messageText = if (message.fromSelf) {
+                    "あなた：${message.text}"
                 } else {
-                    "Server: ${msg.text}"
+                    "サーバー：${message.text}"
                 }
+
+                val timeText = "   ${formatTime(message.timestamp)}"
+
+                // Add timestamp with different style
+                val start = spannable.length
+                val end = spannable.length
+
+                // Add message text
+                spannable.append(messageText)
+                spannable.append("\n")
+                spannable.append(timeText)
+                spannable.append("\n\n")
             }
+            tvClientChat.text = spannable
         }
 
 
         serverVM.messages.observe(this) { msgs ->
-            tvServerChat.text = msgs.joinToString("\n") { msg ->
-                if (msg.fromSelf) {
-                    "You: ${msg.text}"   // serverning o‘zi yuborgan xabar
+            val spannable = SpannableStringBuilder()
+            msgs.forEach { message ->
+                val messageText = if (message.fromSelf) {
+                    "あなた：${message.text}"
                 } else {
-                    "Client: ${msg.text}" // clientdan kelgan xabar
+                    "クライアント：${message.text}"
                 }
+
+                val timeText = "   ${formatTime(message.timestamp)}"
+
+                // Add timestamp with different style
+                val start = spannable.length
+                val end = spannable.length
+
+                // Add message text
+                spannable.append(messageText)
+                spannable.append("\n")
+                spannable.append(timeText)
+                spannable.append("\n\n")
             }
+            tvServerChat.text = spannable
         }
 
         serverVM.isAdvertising.observe(this) { adv ->
-            tvAdvState.text = if (adv) "Advertising: ON" else "Advertising: OFF"
+            tvAdvState.text = if (adv) "アドバタイズ：ON" else "アドバタイズ：OFF"
         }
     }
 
+    private fun formatTime(timestamp: Long): String {
+        return android.text.format.DateFormat.format("HH:mm:ss", timestamp).toString()
+    }
     // ---- Permissions ----
     private fun checkClientPermissions(): Boolean {
         val needed = mutableListOf<String>()

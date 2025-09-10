@@ -30,10 +30,10 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
     private val _isAdvertising = MutableLiveData(false)
     val isAdvertising: LiveData<Boolean> = _isAdvertising
 
-    private val _messages = MutableLiveData<List<Message>>(emptyList())
-    val messages: LiveData<List<Message>> = _messages
+    private val _messages = MutableLiveData<List<MessageModel>>(emptyList())
+    val messages: LiveData<List<MessageModel>> = _messages
 
-    private fun addMsg(m: Message) {
+    private fun addMsg(m: MessageModel) {
         val list = _messages.value?.toMutableList() ?: mutableListOf()
         list.add(m)
         _messages.postValue(list)
@@ -52,7 +52,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
         // 1) GATT server ochish
         gattServer = btManager.openGattServer(getApplication(), serverCallback)
         if (gattServer == null) {
-            addMsg(Message("Failed to open GATT server", false))
+            addMsg(MessageModel("Failed to open GATT server", false))
             return
         }
 
@@ -77,7 +77,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
 
         val ok = gattServer!!.addService(service)
         if (!ok) {
-            addMsg(Message("addService failed", false))
+            addMsg(MessageModel("addService failed", false))
             stopServer()
             return
         }
@@ -85,7 +85,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
         // 4) Advertising boshlash
         val advertiser = btAdapter.bluetoothLeAdvertiser
         if (advertiser == null) {
-            addMsg(Message("BLE Advertiser not available", false))
+            addMsg(MessageModel("BLE Advertiser not available", false))
             return
         }
 
@@ -102,7 +102,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
 
         advertiser.startAdvertising(settings, data, advertiseCallback)
         _isAdvertising.postValue(true)
-        addMsg(Message("Server started & advertising", false))
+        addMsg(MessageModel("Server started & advertising", false))
     }
 
     @SuppressLint("MissingPermission")
@@ -122,7 +122,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
         }
         override fun onStartFailure(errorCode: Int) {
             Log.e("SERVER", "Advertising failed: $errorCode")
-            addMsg(Message("Advertising failed: $errorCode", false))
+            addMsg(MessageModel("Advertising failed: $errorCode", false))
             _isAdvertising.postValue(false)
         }
     }
@@ -174,7 +174,7 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
         ) {
             if (characteristic.uuid == MESSAGE_CHAR_UUID) {
                 val txt = value.decodeToString()
-                addMsg(Message(" $txt",false))
+                addMsg(MessageModel(" $txt",false))
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 }
@@ -197,6 +197,6 @@ class ServerViewModel(application: Application) : AndroidViewModel(application) 
         for (d in subscribers) {
             gattServer?.notifyCharacteristicChanged(d, ch, false)
         }
-        addMsg(Message(" $text", true))
+        addMsg(MessageModel(" $text", true))
     }
 }

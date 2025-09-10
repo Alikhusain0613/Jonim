@@ -5,14 +5,11 @@ import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.util.*
-
-data class Message(val text: String, val fromSelf: Boolean)
 
 @SuppressLint("NewApi")
 class BluetoothViewModel(application: Application) : AndroidViewModel(application) {
@@ -29,8 +26,8 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     val devices: LiveData<List<DeviceModel>> = _devices
     private val found = mutableMapOf<String, DeviceModel>()
 
-    private val _messages = MutableLiveData<List<Message>>(emptyList())
-    val messages: LiveData<List<Message>> = _messages
+    private val _messages = MutableLiveData<List<MessageModel>>(emptyList())
+    val messages: LiveData<List<MessageModel>> = _messages
 
     private var scanning = false
 
@@ -39,7 +36,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     private val MESSAGE_CHAR_UUID = UUID.fromString("0000dcba-0000-1000-8000-00805f9b34fb")
     private val CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
-    private fun addMsg(m: Message) {
+    private fun addMsg(m: MessageModel) {
         val list = _messages.value?.toMutableList() ?: mutableListOf()
         list.add(m)
         _messages.postValue(list)
@@ -53,8 +50,8 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         _devices.postValue(emptyList())
 
         val scanner = bluetoothAdapter?.bluetoothLeScanner ?: return
-        // ixtiyoriy: faqat bizning service UUID bilan advertising qilayotganlarni ko‘rsatmoqchi bo‘lsang, filter qo‘shish mumkin
-        // lekin umumiy skan ham ishlaydi
+        // optional: you can add a filter if you only want to show those advertising with our service UUID
+        // but a general scan will also work
         scanner.startScan(scanCallback)
         scanning = true
     }
@@ -86,7 +83,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     fun connectToDevice(device: BluetoothDevice) {
         gatt?.close()
         _messages.postValue(emptyList())
-        addMsg(Message("Connecting to ${device.name} ...", false))
+        addMsg(MessageModel("Connecting to ${device.address} ...", false))
         gatt = device.connectGatt(getApplication(), false, gattCallback)
     }
 
@@ -98,7 +95,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
                 gatt.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d("CLIENT", "Disconnected")
-                addMsg(Message("Disconnected", false))
+                addMsg(MessageModel("Disconnected", false))
                 gatt.close()
             }
         }
@@ -109,7 +106,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
             val svc = gatt.getService(SERVICE_UUID)
             messageChar = svc?.getCharacteristic(MESSAGE_CHAR_UUID)
             if (messageChar == null) {
-                addMsg(Message("not connected", false))
+                addMsg(MessageModel("Chat characteristic not found", false))
                 return
             }
             // NOTIFY yoqish: CCCD descriptorga yozish SHART!
@@ -119,13 +116,13 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
                 cccd.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                 gatt.writeDescriptor(cccd) // -> server endi notify yubora oladi
             }
-            addMsg(Message("Ready. You can send messages.", false))
+            addMsg(MessageModel("Ready. You can send messages.", false))
         }
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             if (characteristic.uuid == MESSAGE_CHAR_UUID) {
                 val txt = characteristic.value?.decodeToString() ?: ""
-                addMsg(Message(txt, false))
+                addMsg(MessageModel(txt, false))
             }
         }
     }
@@ -134,12 +131,12 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     @SuppressLint("MissingPermission")
     fun sendMessage(text: String) {
         val ch = messageChar ?: run {
-            addMsg(Message("Not connected", false))
+            addMsg(MessageModel("Not connected to chat characteristic", false))
             return
         }
         ch.value = text.toByteArray()
         val ok = gatt?.writeCharacteristic(ch) ?: false
-        if (ok) addMsg(Message(text, true))
-        else addMsg(Message("Send failed", false))
+        if (ok) addMsg(MessageModel(text, true))
+        else addMsg(MessageModel("Send failed", false))
     }
 }
