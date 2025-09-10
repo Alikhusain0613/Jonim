@@ -5,6 +5,7 @@ import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -50,8 +51,8 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         _devices.postValue(emptyList())
 
         val scanner = bluetoothAdapter?.bluetoothLeScanner ?: return
-        // optional: you can add a filter if you only want to show those advertising with our service UUID
-        // but a general scan will also work
+        // ixtiyoriy: faqat bizning service UUID bilan advertising qilayotganlarni ko‘rsatmoqchi bo‘lsang, filter qo‘shish mumkin
+        // lekin umumiy skan ham ishlaydi
         scanner.startScan(scanCallback)
         scanning = true
     }
@@ -83,7 +84,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     fun connectToDevice(device: BluetoothDevice) {
         gatt?.close()
         _messages.postValue(emptyList())
-        addMsg(MessageModel("Connecting to ${device.address} ...", false))
+        addMsg(MessageModel("Connecting to ${device.name} ...", false))
         gatt = device.connectGatt(getApplication(), false, gattCallback)
     }
 
@@ -106,7 +107,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
             val svc = gatt.getService(SERVICE_UUID)
             messageChar = svc?.getCharacteristic(MESSAGE_CHAR_UUID)
             if (messageChar == null) {
-                addMsg(MessageModel("Chat characteristic not found", false))
+                addMsg(MessageModel("not connected", false))
                 return
             }
             // NOTIFY yoqish: CCCD descriptorga yozish SHART!
@@ -131,7 +132,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
     @SuppressLint("MissingPermission")
     fun sendMessage(text: String) {
         val ch = messageChar ?: run {
-            addMsg(MessageModel("Not connected to chat characteristic", false))
+            addMsg(MessageModel("Not connected", false))
             return
         }
         ch.value = text.toByteArray()
